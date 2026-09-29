@@ -143,6 +143,26 @@
         }
 
         async function dbAddCard() {
+		}
+		
+		async function dbDeleteSubmission(submissionId) {
+    if (!confirm("Are you absolutely sure you want to permanently delete this submission?")) {
+        return;
+    
+
+    const { error } = await supabase
+        .from('Submissions')
+        .delete()
+        .eq('id', submissionId); 
+
+    if (error) {
+        alert("Database Error: Could not delete -> " + error.message);
+        return;
+    }
+
+    alert("Submission permanently removed.");
+    await dbFetchCards(); 
+	}
             const cardData = {
                 uid: document.getElementById('playerUid').value.trim(),
                 name: document.getElementById('cardName').value.trim(),
@@ -223,19 +243,44 @@
                 if (clearMatch) li.classList.add('is-strict-dupe');
                 else if (partialMatch) li.classList.add('is-potential-dupe');
 
-            li.innerHTML = `
-                ${clearMatch ? '<div class="badge dupe-badge">Confirmed Dupe</div>' : ''}
-                ${(!clearMatch && partialMatch) ? '<div class="badge potential-badge">Potential Dupe</div>' : ''}
-                <div class="img-container"><img class="card-img" src="${card.img}" crossorigin="anonymous"></div>
-                <div>
-                    <div class="card-name">${card.name}</div>
-                    <div class="card-meta"><b>Player UID:</b> ${card.uid}</div>
-                    <div class="card-meta"><b>Image No:</b> ${card.num}</div>
-                    <div class="card-meta"><b>Frame:</b> ${card.frame}</div>
-                </div>
-                <a href="${card.img}" target="_blank" download="card-${card.num}.png" class="download-btn">Open/Download Image</a>
-            `;
-            grid.appendChild(li);
+                li.innerHTML = `
+        <button 
+            class="safe-delete-btn" 
+            oncontextmenu="event.preventDefault(); dbDeleteSubmission('${card.id}')"
+            onclick="alert('⚠️ Safe Lock Active: To protect against accidents, you must RIGHT-CLICK (or long-press on mobile) this trash icon to delete.');"
+            title="Right-click to delete"
+            style="
+                position: absolute;
+                top: 8px;
+                right: 8px;
+                background: #fee2e2;
+                border: 1px solid #fca5a5;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 13px;
+                padding: 3px 5px;
+                opacity: 0.6;
+                transition: all 0.2s;
+                z-index: 10;"
+            onmouseover="this.style.opacity='1'; this.style.background='#fecaca';"
+            onmouseout="this.style.opacity='0.6'; this.style.background='#fee2e2';">
+            🗑️
+        </button>
+
+        ${clearMatch ? '<div class="badge dupe-badge">Confirmed Dupe</div>' : ''}
+        ${(!clearMatch && partialMatch) ? '<div class="badge potential-badge">Potential Dupe</div>' : ''}
+        <div class="img-container"><img class="card-img" src="${card.img}"></div>
+        <div>
+            <div class="card-name">${card.name}</div>
+            <div class="card-meta"><b>Player UID:</b> ${card.uid}</div>
+            <div class="card-meta"><b>Image No:</b> ${card.num}</div>
+            <div class="card-meta"><b>Frame:</b> ${card.frame}</div>
+        </div>
+        <a href="${card.img}" target="_blank" download="card-${card.num}">Download Link</a>
+    `;
+
+    grid.appendChild(li);
+
         });
     }
 </script>
