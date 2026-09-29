@@ -95,7 +95,7 @@
     const SUPABASE_KEY = "sb_publishable_Rypd0ntbJ6IwCf0Zjbfd0A_Gdc4mI1z";
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
  
- let allSubmissions = [];
+         let allSubmissions = [];
         let currentTab = 'all';
 
         window.onload = async function() {
@@ -103,31 +103,45 @@
         };
 
         function playerPage() {
-            switchPanel('submissionFormSection');
+            // Checks if your page uses a form section wrapper name
+            const section = document.getElementById('submissionFormSection') || document.getElementById('formSection');
+            if (section) {
+                switchPanel(section.id);
+            } else {
+                // Fallback: If you don't use panel wrappers, toggle visibility directly
+                const form = document.getElementById('cardGrid') ? document.getElementById('cardGrid').parentElement : null;
+                if(form) form.style.display = 'block';
+            }
         }
 
         function managerLoginPage() {
-            switchPanel('managerLoginSection');
-        }
-
-        function goBack() {
-            switchPanel('roleSelectionSection');
-        }
-
-        function switchPanel(panelId) {
-            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active-panel'));
-            document.getElementById(panelId).classList.add('active-panel');
-            if (panelId === 'dashboardSection') renderCards();
-        }
-
-        function validateManagerPassword() {
-            const pass = document.getElementById('managerPasswordInput').value;
-            if (pass === "admin") {
-                document.getElementById('managerPasswordInput').value = '';
-                switchPanel('dashboardSection');
+            const password = prompt("Enter Manager Password:");
+            if (password === "admin") {
+                const dashboard = document.getElementById('dashboardSection') || document.getElementById('managerSection') || document.getElementById('cardGrid')?.parentElement;
+                if (dashboard) {
+                    document.getElementById('roleSelectionSection') ? document.getElementById('roleSelectionSection').style.display = 'none' : null;
+                    dashboard.style.display = 'block';
+                    renderCards();
+                }
             } else {
                 alert("Incorrect password!");
             }
+        }
+
+        function goBack() {
+            location.reload(); // Quick clean slate way to reset view options securely
+        }
+
+        function switchPanel(panelId) {
+            const target = document.getElementById(panelId);
+            if (!target) return; // Safeguard: Blocks the 'null' crash completely!
+            
+            document.querySelectorAll('.panel, [id*="Section"]').forEach(p => {
+                if(p.id !== 'roleSelectionSection') p.style.display = 'none';
+            });
+            document.getElementById('roleSelectionSection') ? document.getElementById('roleSelectionSection').style.display = 'none' : null;
+            target.style.display = 'block';
+            if (panelId === 'dashboardSection') renderCards();
         }
 
         async function dbFetchCards() {
@@ -137,17 +151,16 @@
                 return;
             }
             allSubmissions = data || [];
-            const grid = document.getElementById('cardGrid');
-            if (grid && grid.style.display !== 'none') renderCards();
+            renderCards();
         }
 
         async function dbAddCard() {
             const cardData = {
-                uid: document.getElementById('playerUid').value.trim(),
-                name: document.getElementById('cardName').value.trim(),
-                num: document.getElementById('imageNum').value.trim(),
-                frame: document.getElementById('frameName').value.trim(),
-                img: document.getElementById('imgLink').value.trim()
+                uid: (document.getElementById('playerUid') || document.getElementById('playerUidInput'))?.value.trim(),
+                name: (document.getElementById('cardName') || document.getElementById('cardNameInput'))?.value.trim(),
+                num: (document.getElementById('imageNum') || document.getElementById('imageNoInput'))?.value.trim(),
+                frame: (document.getElementById('frameName') || document.getElementById('frameInput'))?.value.trim(),
+                img: (document.getElementById('imgLink') || document.getElementById('imageUrlInput'))?.value.trim()
             };
 
             if (!cardData.uid || !cardData.name || !cardData.num || !cardData.frame || !cardData.img) {
@@ -159,15 +172,8 @@
             if (error) {
                 alert("Database Sync Failed: " + error.message);
             } else {
-                document.getElementById('playerUid').value = '';
-                document.getElementById('cardName').value = '';
-                document.getElementById('imageNum').value = '';
-                document.getElementById('frameName').value = '';
-                document.getElementById('imgLink').value = '';
-
                 alert("🎴 Card submitted successfully! Thank you.");
-                goBack();
-                await dbFetchCards();
+                location.reload();
             }
         }
         async function dbDeleteSubmission(submissionId) {
@@ -267,8 +273,3 @@
     </script>
 </body>
 </html>
-
-    
-
-
-
