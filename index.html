@@ -175,4 +175,43 @@
                     other.frame.toLowerCase() === item.frame.toLowerCase()
                 ));
             } 
-            else if (currentTab === 'potential') {
+                        else if (currentTab === 'potential') {
+                displayList = allSubmissions.filter(item => allSubmissions.some(other => {
+                    if (other.id === item.id || other.num.toLowerCase() !== item.num.toLowerCase()) return false;
+                    return getNameWords(item.name).some(word => getNameWords(other.name).includes(word));
+                }));
+            }
+
+            if (displayList.length === 0) {
+                grid.innerHTML = `<li class="empty-msg">No submissions currently located within this category panel.</li>`;
+                return;
+            }
+
+            displayList.forEach(card => {
+                const li = document.createElement('li');
+                li.className = 'card-item';
+                
+                const clearMatch = allSubmissions.some(o => o.id !== card.id && getNormalizedNameKey(o.name) === getNormalizedNameKey(card.name) && o.num.toLowerCase() === card.num.toLowerCase() && o.frame.toLowerCase() === card.frame.toLowerCase());
+                const partialMatch = allSubmissions.some(o => o.id !== card.id && o.num.toLowerCase() === card.num.toLowerCase() && getNameWords(card.name).some(w => getNameWords(o.name).includes(w)));
+
+                if (clearMatch) li.classList.add('is-strict-dupe');
+                else if (partialMatch) li.classList.add('is-potential-dupe');
+
+                li.innerHTML = `
+                    ${clearMatch ? '<div class="badge dupe-badge">Confirmed Dupe</div>' : ''}
+                    ${(!clearMatch && partialMatch) ? '<div class="badge potential-badge">Potential Dupe</div>' : ''}
+                    <div class="img-container"><img class="card-img" src="${card.img}" crossorigin="anonymous"></div>
+                    <div>
+                        <div class="card-name">${card.name}</div>
+                        <div class="card-meta"><b>Player UID:</b> ${card.uid}</div>
+                        <div class="card-meta"><b>Image No:</b> ${card.num}</div>
+                        <div class="card-meta"><b>Frame:</b> ${card.frame}</div>
+                    </div>
+                    <a href="${card.img}" target="_blank" download="card-${card.num}.png" class="download-btn">Open/Download Image</a>
+                `;
+                grid.appendChild(li);
+            });
+        }
+    </script>
+</body>
+</html>
