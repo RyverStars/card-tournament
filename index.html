@@ -182,7 +182,7 @@ async function dbDeleteSubmission(submissionId) {
     const { error } = await supabase
         .from('Submissions')
         .delete()
-        .eq('id', submissionId);
+        .eq('uid', submissionId);
 
     if (error) {
         alert("Database Error: Could not delete -> " + error.message);
@@ -192,6 +192,7 @@ async function dbDeleteSubmission(submissionId) {
     alert("Submission permanently removed.");
     await dbFetchCards(); 
 }
+
 
 function getNameWords(name) { 
     return name.toLowerCase().trim().split(/\s+/); 
