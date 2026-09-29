@@ -38,13 +38,17 @@
 </head>
 <body>
 
-    <div id="roleSelectionSection" style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 25px; text-align: center;">
-        <h2 style="margin-top: 0; color: #333;">🏆 Card Tournament Portal</h2>
-        <p style="color: #666; margin-bottom: 25px;">Please select your role to continue to the system:</p>
-        <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-            <button style="background: #28a745; color: white; padding: 14px 28px; font-size: 16px; min-width: 160px;" onclick="playerPage()">I am a Player</button>
-            <button style="background: #007BFF; color: white; padding: 14px 28px; font-size: 16px; min-width: 160px;" onclick="managerLoginPage()">I am a Manager</button>
-        </div>
+   <div id="roleSelectionSection" style=none >
+        <p align=right>
+                 <button style="background: #007BFF; color: white; padding: 8px 13px; font-size: 10px; margin-bottom: 5px; display: inline-block; border-radius: 2px;" onclick="managerLoginPage()">I am a Manager</button>
+        </p>
+        <div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 25px; text-align: center;">
+                <h2 style="margin-top: 0; color: #333;">🏆 Lumina COTF Submission</h2>
+               <p style="color: #666; margin-bottom: 25px;">Please select your role to continue to the system:</p>
+                      <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                     <button style="background: #28a745; color: white; padding: 14px 28px; font-size: 16px; min-width: 160px;" onclick="playerPage()">I am a Player</button>
+                    </div>
+        </div>        
     </div>
 
     <div id="loginSection" class="login-container" style="display: none;">
