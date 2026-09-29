@@ -277,29 +277,29 @@ function goBackToRoles(currentSectionId) {
                 if (clearMatch) li.classList.add('is-strict-dupe');
                 else if (partialMatch) li.classList.add('is-potential-dupe');
 
-                li.innerHTML = `
-                    <button 
-                        class="safe-delete-btn" 
-                        oncontextmenu="event.preventDefault(); dbDeleteSubmission('${card.id}')"
-                        onclick="alert('⚠️ Safe Lock Active: To protect against accidents, you must RIGHT-CLICK (or long-press on mobile) this trash icon to delete.');"
-                        title="Right-click to delete"
-                        style="position: absolute; top: 8px; right: 8px; background: #fee2e2; border: 1px solid #fca5a5; border-radius: 4px; cursor: pointer; font-size: 13px; padding: 3px 5px; opacity: 0.6; transition: all 0.2s; z-index: 10;"
-                        onmouseover="this.style.opacity='1'; this.style.background='#fecaca';"
-                        onmouseout="this.style.opacity='0.6'; this.style.background='#fee2e2';">
-                        🗑️
-                    </button>
+                 li.innerHTML = `
+            <button 
+                class="safe-delete-btn" 
+                oncontextmenu="event.preventDefault(); dbDeleteSubmission('\${card.id}')"
+                onclick="alert('⚠️ Safe Lock Active: To protect against accidents, you must RIGHT-CLICK (or long-press on mobile) this trash icon to delete.');"
+                title="Right-click to delete"
+                style="position: absolute; top: 8px; right: 8px; background: #fee2e2; border: 1px solid #fca5a5; border-radius: 4px; cursor: pointer; font-size: 13px; padding: 3px 5px; opacity: 0.6; transition: all 0.2s; z-index: 10;"
+                onmouseover="this.style.opacity='1'; this.style.background='#fecaca';"
+                onmouseout="this.style.opacity='0.6'; this.style.background='#fee2e2';">
+                🗑️
+            </button>
 
-                    \${clearMatch ? '<div class="badge dupe-badge">Confirmed Dupe</div>' : ''}
-                    \${(!clearMatch && partialMatch) ? '<div class="badge potential-badge">Potential Dupe</div>' : ''}
-                    <div class="img-container"><img class="card-img" src="\${card.img}"></div>
-                    <div>
-                        <div class="card-name">\${card.name}</div>
-                        <div class="card-meta"><b>Player UID:</b> \${card.uid}</div>
-                        <div class="card-meta"><b>Image No:</b> \${card.num}</div>
-                        <div class="card-meta"><b>Frame:</b> \${card.frame}</div>
-                    </div>
-                    <a href="\${card.img}" target="_blank" style="display:block; margin-top:8px; font-size:12px; color:#2563eb;">Download Link</a>
-                `;
+            \${clearMatch ? '<div class="badge dupe-badge">Confirmed Dupe</div>' : ''}
+            \${(!clearMatch && partialMatch) ? '<div class="badge potential-badge">Potential Dupe</div>' : ''}
+            <div class="img-container"><img class="card-img" src="\${card.img}"></div>
+            <div>
+                <div class="card-name">\${card.name}</div>
+                <div class="card-meta"><b>Player UID:</b> \${card.uid}</div>
+                <div class="card-meta"><b>Image No:</b> \${card.num}</div>
+                <div class="card-meta"><b>Frame:</b> \${card.frame}</div>
+            </div>
+            <a href="\${card.img}" target="_blank" style="display:block; margin-top:8px; font-size:12px; color:#2563eb;">Download Link</a>
+        `;
                 grid.appendChild(li);
             });
         }
