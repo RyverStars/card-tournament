@@ -194,7 +194,6 @@ async function dbDeleteSubmission(submissionId) {
 	}
 
         }
-    }
 
     function getNameWords(name) { return name.toLowerCase().trim().split(/\s+/); }
     function getNormalizedNameKey(name) { return getNameWords(name).sort().join(' '); }
