@@ -172,7 +172,7 @@
         } else {
             dbFetchCards();
         }
-		}
+    }
 
 async function dbDeleteSubmission(submissionId) {
     if (!confirm("Are you absolutely sure you want to permanently delete this submission?")) {
@@ -192,6 +192,7 @@ async function dbDeleteSubmission(submissionId) {
     alert("Submission permanently removed.");
     await dbFetchCards(); 
 }
+
 
 
 function getNameWords(name) { 
