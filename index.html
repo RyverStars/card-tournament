@@ -93,7 +93,7 @@
     
         const SUPABASE_URL = "https://iiizpzsbdyoyexmclqkc.supabase.co";
         const SUPABASE_KEY = "sb_publishable_Rypd0ntbJ6IwCf0Zjbfd0A_Gdc4mI1z";
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let allSubmissions = [];
         let currentTab = 'all';
