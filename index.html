@@ -250,7 +250,7 @@ function renderCards() {
         li.innerHTML = `
             <button 
                 class="safe-delete-btn" 
-                oncontextmenu="event.preventDefault(); dbDeleteSubmission('${card.uid}')"
+                oncontextmenu="event.preventDefault(); dbDeleteSubmission('${card.id}')"
                 onclick="alert('⚠️ Safe Lock Active: To protect against accidents, you must RIGHT-CLICK (or long-press on mobile) this trash icon to delete.');"
                 title="Right-click to delete"
                 style="
@@ -289,5 +289,6 @@ function renderCards() {
 </script>
 </body>
 </html>
+
 
 
