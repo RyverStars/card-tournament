@@ -177,7 +177,7 @@
 async function dbDeleteSubmission(submissionId) {
     if (!confirm("Are you absolutely sure you want to permanently delete this submission?")) {
         return;
-		}
+    }
 
     const { error } = await supabase
         .from('Submissions')
@@ -187,102 +187,105 @@ async function dbDeleteSubmission(submissionId) {
     if (error) {
         alert("Database Error: Could not delete -> " + error.message);
         return;
-		}
+    }
 
     alert("Submission permanently removed.");
     await dbFetchCards(); 
-	}
+}
 
-        }
+function getNameWords(name) { 
+    return name.toLowerCase().trim().split(/\s+/); 
+}
 
-    function getNameWords(name) { return name.toLowerCase().trim().split(/\s+/); }
-    function getNormalizedNameKey(name) { return getNameWords(name).sort().join(' '); }
+function getNormalizedNameKey(name) { 
+    return getNameWords(name).sort().join(' '); 
+}
 
-    function switchTab(tabName) {
-        currentTab = tabName;
-        document.getElementById('tabAll').classList.toggle('active', tabName === 'all');
-        document.getElementById('tabStrict').classList.toggle('active', tabName === 'strict');
-        document.getElementById('tabPotential').classList.toggle('active', tabName === 'potential');
-        renderCards();
+function switchTab(tabName) {
+    currentTab = tabName;
+    document.getElementById('tabAll').classList.toggle('active', tabName === 'all');
+    document.getElementById('tabStrict').classList.toggle('active', tabName === 'strict');
+    document.getElementById('tabPotential').classList.toggle('active', tabName === 'potential');
+    renderCards();
+}
+
+function renderCards() {
+    const grid = document.getElementById('cardGrid');
+    if (!grid || grid.style.display === 'none') return;
+    grid.innerHTML = '';
+    let displayList = [];
+
+    if (currentTab === 'all') {
+        displayList = allSubmissions;
+    } else if (currentTab === 'strict') {
+        displayList = allSubmissions.filter(item => allSubmissions.some(other => 
+            other.id !== item.id &&
+            getNormalizedNameKey(other.name) === getNormalizedNameKey(item.name) &&
+            other.num.toLowerCase() === item.num.toLowerCase() &&
+            other.frame.toLowerCase() === item.frame.toLowerCase()
+        ));
+    } else if (currentTab === 'potential') {
+        displayList = allSubmissions.filter(item => allSubmissions.some(other => {
+            if (other.id === item.id || other.num.toLowerCase() !== item.num.toLowerCase()) return false;
+            return getNameWords(item.name).some(w => getNameWords(other.name).includes(w));
+        }));
     }
 
-    function renderCards() {
-        const grid = document.getElementById('cardGrid');
-        if (!grid || grid.style.display === 'none') return;
-        grid.innerHTML = '';
-        let displayList = [];
-
-        if (currentTab === 'all') {
-            displayList = allSubmissions;
-        } else if (currentTab === 'strict') {
-            displayList = allSubmissions.filter(item => allSubmissions.some(other => 
-                other.id !== item.id &&
-                getNormalizedNameKey(other.name) === getNormalizedNameKey(item.name) &&
-                other.num.toLowerCase() === item.num.toLowerCase() &&
-                other.frame.toLowerCase() === item.frame.toLowerCase()
-            ));
-        } else if (currentTab === 'potential') {
-            displayList = allSubmissions.filter(item => allSubmissions.some(other => {
-                if (other.id === item.id || other.num.toLowerCase() !== item.num.toLowerCase()) return false;
-                return getNameWords(item.name).some(w => getNameWords(other.name).includes(w));
-            }));
-        }
-
-        if (displayList.length === 0) {
-            grid.innerHTML = `<li class="empty-msg">No submissions currently located within this panel.</li>`;
-            return;
-        }
-
-        displayList.forEach(card => {
-            const li = document.createElement('li');
-            li.className = 'card-item';
-            
-            const clearMatch = allSubmissions.some(o => o.id !== card.id && getNormalizedNameKey(o.name) === getNormalizedNameKey(card.name) && o.num.toLowerCase() === card.num.toLowerCase() && o.frame.toLowerCase() === card.frame.toLowerCase());
-            const partialMatch = allSubmissions.some(o => o.id !== card.id && o.num.toLowerCase() === card.num.toLowerCase() && getNameWords(card.name).some(w => getNameWords(o.name).includes(w)));
-
-                if (clearMatch) li.classList.add('is-strict-dupe');
-                else if (partialMatch) li.classList.add('is-potential-dupe');
-
-                li.innerHTML = `
-        <button 
-            class="safe-delete-btn" 
-            oncontextmenu="event.preventDefault(); dbDeleteSubmission('${card.id}')"
-            onclick="alert('⚠️ Safe Lock Active: To protect against accidents, you must RIGHT-CLICK (or long-press on mobile) this trash icon to delete.');"
-            title="Right-click to delete"
-            style="
-                position: absolute;
-                top: 8px;
-                right: 8px;
-                background: #fee2e2;
-                border: 1px solid #fca5a5;
-                border-radius: 4px;
-                cursor: pointer;
-                font-size: 13px;
-                padding: 3px 5px;
-                opacity: 0.6;
-                transition: all 0.2s;
-                z-index: 10;"
-            onmouseover="this.style.opacity='1'; this.style.background='#fecaca';"
-            onmouseout="this.style.opacity='0.6'; this.style.background='#fee2e2';">
-            🗑️
-        </button>
-
-        ${clearMatch ? '<div class="badge dupe-badge">Confirmed Dupe</div>' : ''}
-        ${(!clearMatch && partialMatch) ? '<div class="badge potential-badge">Potential Dupe</div>' : ''}
-        <div class="img-container"><img class="card-img" src="${card.img}"></div>
-        <div>
-            <div class="card-name">${card.name}</div>
-            <div class="card-meta"><b>Player UID:</b> ${card.uid}</div>
-            <div class="card-meta"><b>Image No:</b> ${card.num}</div>
-            <div class="card-meta"><b>Frame:</b> ${card.frame}</div>
-        </div>
-        <a href="${card.img}" target="_blank" download="card-${card.num}">Download Link</a>
-    `;
-
-    grid.appendChild(li);
-
-        });
+    if (displayList.length === 0) {
+        grid.innerHTML = `<li class="empty-msg">No submissions currently located within this panel.</li>`;
+        return;
     }
+
+    displayList.forEach(card => {
+        const li = document.createElement('li');
+        li.className = 'card-item';
+        li.style.position = 'relative'; // Anchors the trash button inside the card boundary
+        
+        const clearMatch = allSubmissions.some(o => o.id !== card.id && getNormalizedNameKey(o.name) === getNormalizedNameKey(card.name) && o.num.toLowerCase() === card.num.toLowerCase() && o.frame.toLowerCase() === card.frame.toLowerCase());
+        const partialMatch = allSubmissions.some(o => o.id !== card.id && o.num.toLowerCase() === card.num.toLowerCase() && getNameWords(card.name).some(w => getNameWords(o.name).includes(w)));
+
+        if (clearMatch) li.classList.add('is-strict-dupe');
+        else if (partialMatch) li.classList.add('is-potential-dupe');
+
+        li.innerHTML = `
+            <button 
+                class="safe-delete-btn" 
+                oncontextmenu="event.preventDefault(); dbDeleteSubmission('${card.id}')"
+                onclick="alert('⚠️ Safe Lock Active: To protect against accidents, you must RIGHT-CLICK (or long-press on mobile) this trash icon to delete.');"
+                title="Right-click to delete"
+                style="
+                    position: absolute;
+                    top: 8px;
+                    right: 8px;
+                    background: #fee2e2;
+                    border: 1px solid #fca5a5;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 13px;
+                    padding: 3px 5px;
+                    opacity: 0.6;
+                    transition: all 0.2s;
+                    z-index: 10;"
+                onmouseover="this.style.opacity='1'; this.style.background='#fecaca';"
+                onmouseout="this.style.opacity='0.6'; this.style.background='#fee2e2';">
+                🗑️
+            </button>
+
+            ${clearMatch ? '<div class="badge dupe-badge">Confirmed Dupe</div>' : ''}
+            ${(!clearMatch && partialMatch) ? '<div class="badge potential-badge">Potential Dupe</div>' : ''}
+            <div class="img-container"><img class="card-img" src="${card.img}"></div>
+            <div>
+                <div class="card-name">${card.name}</div>
+                <div class="card-meta"><b>Player UID:</b> ${card.uid}</div>
+                <div class="card-meta"><b>Image No:</b> ${card.num}</div>
+                <div class="card-meta"><b>Frame:</b> ${card.frame}</div>
+            </div>
+            <a href="${card.img}" target="_blank" download="card-${card.num}">Download Link</a>
+        `;
+
+        grid.appendChild(li);
+    });
+}
 </script>
 </body>
 </html>
