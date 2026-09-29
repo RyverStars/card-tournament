@@ -193,8 +193,6 @@ async function dbDeleteSubmission(submissionId) {
     await dbFetchCards(); 
 }
 
-
-
 function getNameWords(name) { 
     return name.toLowerCase().trim().split(/\s+/); 
 }
@@ -283,7 +281,7 @@ function renderCards() {
                 <div class="card-meta"><b>Frame:</b> ${card.frame}</div>
             </div>
             <a href="${card.img}" target="_blank" download="card-${card.num}">Download Link</a>
-        `;
+        `;//
 
         grid.appendChild(li);
     });
