@@ -88,9 +88,9 @@
         <ul id="cardGrid" class="card-grid"></ul>
     </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+	<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <script>
+    
         const SUPABASE_URL = "https://iiizpzsbdyoyexmclqkc.supabase.co";
         const SUPABASE_KEY = "sb_publishable_Rypd0ntbJ6IwCf0Zjbfd0A_Gdc4mI1z";
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -134,7 +134,7 @@
         }
 
         async function dbFetchCards() {
-            const { data, error } = await _supabase.from('Submissions').select('*');
+            const { data, error } = await supabase.from('Submissions').select('*');
             if (!error && data) {
                 allSubmissions = data;
                 renderCards();
@@ -154,7 +154,7 @@
                 alert("All data fields are mandatory!"); return;
             }
 
-            const { error } = await _supabase.from('Submissions').insert([cardData]);
+            const { error } = await supabase.from('Submissions').insert([cardData]);
             if (error) {
                 alert("Database Sync Failed: " + error.message);<!-- 
   
