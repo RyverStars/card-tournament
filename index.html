@@ -239,7 +239,7 @@ function renderCards() {
     displayList.forEach(card => {
         const li = document.createElement('li');
         li.className = 'card-item';
-        li.style.position = 'relative'; // Anchors the trash button inside the card boundary
+        li.style.position = 'relative'; 
         
         const clearMatch = allSubmissions.some(o => o.id !== card.id && getNormalizedNameKey(o.name) === getNormalizedNameKey(card.name) && o.num.toLowerCase() === card.num.toLowerCase() && o.frame.toLowerCase() === card.frame.toLowerCase());
         const partialMatch = allSubmissions.some(o => o.id !== card.id && o.num.toLowerCase() === card.num.toLowerCase() && getNameWords(card.name).some(w => getNameWords(o.name).includes(w)));
@@ -250,7 +250,7 @@ function renderCards() {
         li.innerHTML = `
             <button 
                 class="safe-delete-btn" 
-                oncontextmenu="event.preventDefault(); dbDeleteSubmission('${card.id}')"
+                oncontextmenu="event.preventDefault(); dbDeleteSubmission('${card.uid}')"
                 onclick="alert('⚠️ Safe Lock Active: To protect against accidents, you must RIGHT-CLICK (or long-press on mobile) this trash icon to delete.');"
                 title="Right-click to delete"
                 style="
@@ -281,13 +281,13 @@ function renderCards() {
                 <div class="card-meta"><b>Frame:</b> ${card.frame}</div>
             </div>
             <a href="${card.img}" target="_blank" download="card-${card.num}">Download Link</a>
-        `;//
+        `;
 
         grid.appendChild(li);
     });
 }
-}
 </script>
 </body>
 </html>
+
 
