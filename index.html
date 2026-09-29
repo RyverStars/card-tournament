@@ -90,194 +90,185 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 	<script>
-    const SUPABASE_URL = "https://iiizpzsbdyoyexmclqkc.supabase.co";
+   
+   const SUPABASE_URL = "https://iiizpzsbdyoyexmclqkc.supabase.co";
     const SUPABASE_KEY = "sb_publishable_Rypd0ntbJ6IwCf0Zjbfd0A_Gdc4mI1z";
-    supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+ 
+ let allSubmissions = [];
+        let currentTab = 'all';
 
-    let allSubmissions = [];
-    let currentTab = 'all';
-
-    window.onload = async function() {
-        await dbFetchCards();
-    };
-
-    function playerPage() {
-        document.getElementById('roleSelectionSection').style.display = 'none';
-        document.getElementById('submissionFormSection').style.display = 'block';
-    }
-
-    function managerLoginPage() {
-        const password = prompt("Enter Manager Password:");
-        if (password === "admin") { // Change this to your desired manager password
-            document.getElementById('roleSelectionSection').style.display = 'none';
-            document.getElementById('dashboardSection').style.display = 'block';
-            renderCards();
-        } else {
-            alert("Incorrect password!");
-        }
-    }
-
-    async function dbFetchCards() {
-        const { data, error } = await supabase
-            .from('Submissions')
-            .select('*');
-
-        if (error) {
-            console.error("Error fetching data:", error.message);
-            return;
-        }
-
-        allSubmissions = data || [];
-        renderCards();
-    }
-
-    async function dbAddCard() {
-        const cardData = {
-            uid: document.getElementById('playerUid').value.trim(),
-            name: document.getElementById('cardName').value.trim(),
-            num: document.getElementById('imageNum').value.trim(),
-            frame: document.getElementById('frameName').value.trim(),
-            img: document.getElementById('imgLink').value.trim()
+        window.onload = async function() {
+            await dbFetchCards();
         };
 
-        if (!cardData.uid || !cardData.name || !cardData.num || !cardData.frame || !cardData.img) {
-            alert("All data fields are mandatory!"); 
-            return;
+        function playerPage() {
+            switchPanel('submissionFormSection');
         }
 
-        const { error } = await supabase.from('Submissions').insert([cardData]);
-        if (error) {
-            alert("Database Sync Failed: " + error.message);
-        } else {
-            document.getElementById('cardName').value = '';
-            document.getElementById('imageNum').value = '';
-            document.getElementById('frameName').value = '';
-            document.getElementById('imgLink').value = '';
-
-            alert("🎴 Card submitted successfully! Thank you.");
-            document.getElementById('submissionFormSection').style.display = 'none';
-            document.getElementById('roleSelectionSection').style.display = 'block';
-            await dbFetchCards();
-        }
-    }
-
-    async function dbDeleteSubmission(submissionId) {
-        if (!confirm("Are you absolutely sure you want to permanently delete this submission?")) {
-            return;
+        function managerLoginPage() {
+            switchPanel('managerLoginSection');
         }
 
-        const { error } = await supabase
-            .from('Submissions')
-            .delete()
-            .eq('id', submissionId);
-
-        if (error) {
-            alert("Database Error: Could not delete -> " + error.message);
-            return;
+        function goBack() {
+            switchPanel('roleSelectionSection');
         }
 
-        alert("Submission permanently removed.");
-        await dbFetchCards(); 
-    }
-
-    function getNameWords(name) { 
-        return name.toLowerCase().trim().split(/\s+/); 
-    }
-
-    // Fixed a potential typo in the reference name key compiler
-    function getNormalizedNameKey(name) { 
-        return getNameWords(name || '').sort().join(' '); 
-    }
-
-    function switchTab(tabName) {
-        currentTab = tabName;
-        document.getElementById('tabAll').classList.toggle('active', tabName === 'all');
-        document.getElementById('tabStrict').classList.toggle('active', tabName === 'strict');
-        document.getElementById('tabPotential').classList.toggle('active', tabName === 'potential');
-        renderCards();
-    }
-
-    function renderCards() {
-        const grid = document.getElementById('cardGrid');
-        if (!grid || grid.style.display === 'none') return;
-        grid.innerHTML = '';
-        let displayList = [];
-
-        if (currentTab === 'all') {
-            displayList = allSubmissions;
-        } else if (currentTab === 'strict') {
-            displayList = allSubmissions.filter(item => allSubmissions.some(other => 
-                other.id !== item.id &&
-                getNormalizedNameKey(other.name) === getNormalizedNameKey(item.name) &&
-                other.num.toLowerCase() === item.num.toLowerCase() &&
-                other.frame.toLowerCase() === item.frame.toLowerCase()
-            ));
-        } else if (currentTab === 'potential') {
-            displayList = allSubmissions.filter(item => allSubmissions.some(other => {
-                if (other.id === item.id || other.num.toLowerCase() !== item.num.toLowerCase()) return false;
-                return getNameWords(item.name || '').some(w => getNameWords(other.name || '').includes(w));
-            }));
+        function switchPanel(panelId) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active-panel'));
+            document.getElementById(panelId).classList.add('active-panel');
+            if (panelId === 'dashboardSection') renderCards();
         }
 
-        if (displayList.length === 0) {
-            grid.innerHTML = `<li class="empty-msg">No submissions currently located within this panel.</li>`;
-            return;
+        function validateManagerPassword() {
+            const pass = document.getElementById('managerPasswordInput').value;
+            if (pass === "admin") {
+                document.getElementById('managerPasswordInput').value = '';
+                switchPanel('dashboardSection');
+            } else {
+                alert("Incorrect password!");
+            }
         }
 
-        displayList.forEach(card => {
-            const li = document.createElement('li');
-            li.className = 'card-item';
-            li.style.position = 'relative'; 
-            
-            const clearMatch = allSubmissions.some(o => o.id !== card.id && getNormalizedNameKey(o.name) === getNormalizedNameKey(card.name) && o.num.toLowerCase() === card.num.toLowerCase() && o.frame.toLowerCase() === card.frame.toLowerCase());
-            const partialMatch = allSubmissions.some(o => o.id !== card.id && o.num.toLowerCase() === card.num.toLowerCase() && getNameWords(card.name || '').some(w => getNameWords(o.name || '').includes(w)));
+        async function dbFetchCards() {
+            const { data, error } = await supabase.from('Submissions').select('*');
+            if (error) {
+                console.error("Fetch failure:", error.message);
+                return;
+            }
+            allSubmissions = data || [];
+            const grid = document.getElementById('cardGrid');
+            if (grid && grid.style.display !== 'none') renderCards();
+        }
 
-            if (clearMatch) li.classList.add('is-strict-dupe');
-            else if (partialMatch) li.classList.add('is-potential-dupe');
+        async function dbAddCard() {
+            const cardData = {
+                uid: document.getElementById('playerUid').value.trim(),
+                name: document.getElementById('cardName').value.trim(),
+                num: document.getElementById('imageNum').value.trim(),
+                frame: document.getElementById('frameName').value.trim(),
+                img: document.getElementById('imgLink').value.trim()
+            };
 
-            li.innerHTML = `
-                <button 
-                    class="safe-delete-btn" 
-                    oncontextmenu="event.preventDefault(); dbDeleteSubmission('${card.id}')"
-                    onclick="alert('⚠️ Safe Lock Active: To protect against accidents, you must RIGHT-CLICK (or long-press on mobile) this trash icon to delete.');"
-                    title="Right-click to delete"
-                    style="
-                        position: absolute;
-                        top: 8px;
-                        right: 8px;
-                        background: #fee2e2;
-                        border: 1px solid #fca5a5;
-                        border-radius: 4px;
-                        cursor: pointer;
-                        font-size: 13px;
-                        padding: 3px 5px;
-                        opacity: 0.6;
-                        transition: all 0.2s;
-                        z-index: 10;"
-                    onmouseover="this.style.opacity='1'; this.style.background='#fecaca';"
-                    onmouseout="this.style.opacity='0.6'; this.style.background='#fee2e2';">
-                    🗑️
-                </button>
+            if (!cardData.uid || !cardData.name || !cardData.num || !cardData.frame || !cardData.img) {
+                alert("All data fields are mandatory!"); 
+                return;
+            }
 
-                ${clearMatch ? '<div class="badge dupe-badge">Confirmed Dupe</div>' : ''}
-                ${(!clearMatch && partialMatch) ? '<div class="badge potential-badge">Potential Dupe</div>' : ''}
-                <div class="img-container"><img class="card-img" src="${card.img}"></div>
-                <div>
-                    <div class="card-name">${card.name}</div>
-                    <div class="card-meta"><b>Player UID:</b> ${card.uid}</div>
-                    <div class="card-meta"><b>Image No:</b> ${card.num}</div>
-                    <div class="card-meta"><b>Frame:</b> ${card.frame}</div>
-                </div>
-                <a href="${card.img}" target="_blank" download="card-${card.num}">Download Link</a>
-            `;
+            const { error } = await supabase.from('Submissions').insert([cardData]);
+            if (error) {
+                alert("Database Sync Failed: " + error.message);
+            } else {
+                document.getElementById('playerUid').value = '';
+                document.getElementById('cardName').value = '';
+                document.getElementById('imageNum').value = '';
+                document.getElementById('frameName').value = '';
+                document.getElementById('imgLink').value = '';
 
-            grid.appendChild(li);
-        });
-    }
-</script>
+                alert("🎴 Card submitted successfully! Thank you.");
+                goBack();
+                await dbFetchCards();
+            }
+        }
+        async function dbDeleteSubmission(submissionId) {
+            if (!confirm("Are you absolutely sure you want to permanently delete this submission?")) {
+                return;
+            }
 
+            const { error } = await supabase.from('Submissions').delete().eq('id', submissionId);
+            if (error) {
+                alert("Database Error: Could not delete -> " + error.message);
+                return;
+            }
+
+            alert("Submission permanently removed.");
+            await dbFetchCards(); 
+        }
+
+        function getNameWords(name) { 
+            return name ? name.toLowerCase().trim().split(/\s+/) : []; 
+        }
+
+        function getNormalizedNameKey(name) { 
+            return getNameWords(name).sort().join(' '); 
+        }
+
+        function switchTab(tabName) {
+            currentTab = tabName;
+            document.getElementById('tabAll').classList.toggle('active', tabName === 'all');
+            document.getElementById('tabStrict').classList.toggle('active', tabName === 'strict');
+            document.getElementById('tabPotential').classList.toggle('active', tabName === 'potential');
+            renderCards();
+        }
+
+        function renderCards() {
+            const grid = document.getElementById('cardGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            let displayList = [];
+
+            if (currentTab === 'all') {
+                displayList = allSubmissions;
+            } else if (currentTab === 'strict') {
+                displayList = allSubmissions.filter(item => allSubmissions.some(other => 
+                    other.id !== item.id &&
+                    getNormalizedNameKey(other.name) === getNormalizedNameKey(item.name) &&
+                    String(other.num).toLowerCase() === String(item.num).toLowerCase() &&
+                    String(other.frame).toLowerCase() === String(item.frame).toLowerCase()
+                ));
+            } else if (currentTab === 'potential') {
+                displayList = allSubmissions.filter(item => allSubmissions.some(other => {
+                    if (other.id === item.id || String(other.num).toLowerCase() !== String(item.num).toLowerCase()) return false;
+                    return getNameWords(item.name).some(w => getNameWords(other.name).includes(w));
+                }));
+            }
+
+            if (displayList.length === 0) {
+                grid.innerHTML = `<li class="empty-msg">No submissions currently located within this panel.</li>`;
+                return;
+            }
+
+            displayList.forEach(card => {
+                const li = document.createElement('li');
+                li.className = 'card-item';
+                
+                const clearMatch = allSubmissions.some(o => o.id !== card.id && getNormalizedNameKey(o.name) === getNormalizedNameKey(card.name) && String(o.num).toLowerCase() === String(card.num).toLowerCase() && String(o.frame).toLowerCase() === String(card.frame).toLowerCase());
+                const partialMatch = allSubmissions.some(o => o.id !== card.id && String(o.num).toLowerCase() === String(card.num).toLowerCase() && getNameWords(card.name).some(w => getNameWords(o.name).includes(w)));
+
+                if (clearMatch) li.classList.add('is-strict-dupe');
+                else if (partialMatch) li.classList.add('is-potential-dupe');
+
+                li.innerHTML = `
+                    <button 
+                        class="safe-delete-btn" 
+                        oncontextmenu="event.preventDefault(); dbDeleteSubmission('${card.id}')"
+                        onclick="alert('⚠️ Safe Lock Active: To protect against accidents, you must RIGHT-CLICK (or long-press on mobile) this trash icon to delete.');"
+                        title="Right-click to delete"
+                        style="position: absolute; top: 8px; right: 8px; background: #fee2e2; border: 1px solid #fca5a5; border-radius: 4px; cursor: pointer; font-size: 13px; padding: 3px 5px; opacity: 0.6; transition: all 0.2s; z-index: 10;"
+                        onmouseover="this.style.opacity='1'; this.style.background='#fecaca';"
+                        onmouseout="this.style.opacity='0.6'; this.style.background='#fee2e2';">
+                        🗑️
+                    </button>
+
+                    \${clearMatch ? '<div class="badge dupe-badge">Confirmed Dupe</div>' : ''}
+                    \${(!clearMatch && partialMatch) ? '<div class="badge potential-badge">Potential Dupe</div>' : ''}
+                    <div class="img-container"><img class="card-img" src="\${card.img}"></div>
+                    <div>
+                        <div class="card-name">\${card.name}</div>
+                        <div class="card-meta"><b>Player UID:</b> \${card.uid}</div>
+                        <div class="card-meta"><b>Image No:</b> \${card.num}</div>
+                        <div class="card-meta"><b>Frame:</b> \${card.frame}</div>
+                    </div>
+                    <a href="\${card.img}" target="_blank" style="display:block; margin-top:8px; font-size:12px; color:#2563eb;">Download Link</a>
+                `;
+                grid.appendChild(li);
+            });
+        }
+    </script>
 </body>
 </html>
+
+    
 
 
 
