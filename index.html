@@ -133,16 +133,27 @@
         }
 
         function switchPanel(panelId) {
-            const target = document.getElementById(panelId);
-            if (!target) return; // Safeguard: Blocks the 'null' crash completely!
-            
-            document.querySelectorAll('.panel, [id*="Section"]').forEach(p => {
-                if(p.id !== 'roleSelectionSection') p.style.display = 'none';
-            });
+    const target = document.getElementById(panelId);
+    if (!target) {
+        const altId = panelId === 'submissionFormSection' ? 'submissionSection' : 'dashboardSection';
+        const altTarget = document.getElementById(altId) || document.getElementById('formSection') || document.getElementById('managerSection');
+        if (altTarget) {
+            altTarget.style.display = 'block';
             document.getElementById('roleSelectionSection') ? document.getElementById('roleSelectionSection').style.display = 'none' : null;
-            target.style.display = 'block';
-            if (panelId === 'dashboardSection') renderCards();
         }
+        return; 
+    }
+    
+    document.querySelectorAll('.panel, [id*="Section"]').forEach(p => {
+        if (p.id !== 'roleSelectionSection') p.style.display = 'none';
+    });
+    
+    const roleSection = document.getElementById('roleSelectionSection');
+    if (roleSection) roleSection.style.display = 'none';
+    
+    target.style.display = 'block';
+    if (panelId === 'dashboardSection') renderCards();
+}
 
         async function dbFetchCards() {
             const { data, error } = await supabase.from('Submissions').select('*');
