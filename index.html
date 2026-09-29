@@ -113,7 +113,7 @@
 
         // Fetch shared card logs from cloud database
         async function dbFetchCards() {
-            const { data, error } = await _supabase.from('submissions').select('*');
+            const { data, error } = await _supabase.from('Submissions').select('*');
             if (!error && data) {
                 allSubmissions = data;
                 renderCards();
@@ -134,7 +134,7 @@
                 alert("All data fields are mandatory!"); return;
             }
 
-            const { error } = await _supabase.from('submissions').insert([cardData]);
+            const { error } = await _supabase.from('Submissions').insert([cardData]);
             if (error) {
                 alert("Database Sync Failed: " + error.message);
             } else {
