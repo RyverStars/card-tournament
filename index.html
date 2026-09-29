@@ -143,55 +143,56 @@
         }
 
         async function dbAddCard() {
+    const cardData = {
+        uid: document.getElementById('playerUid').value.trim(),
+        name: document.getElementById('cardName').value.trim(),
+        num: document.getElementById('imageNum').value.trim(),
+        frame: document.getElementById('frameName').value.trim(),
+        img: document.getElementById('imgLink').value.trim()
+    };
+
+    if (!cardData.uid || !cardData.name || !cardData.num || !cardData.frame || !cardData.img) {
+        alert("All data fields are mandatory!"); 
+        return;
+    }
+
+    const { error } = await supabase.from('Submissions').insert([cardData]);
+    if (error) {
+        alert("Database Sync Failed: " + error.message);
+    } else {
+        document.getElementById('cardName').value = '';
+        document.getElementById('imageNum').value = '';
+        document.getElementById('frameName').value = '';
+        document.getElementById('imgLink').value = '';
+
+        if (document.getElementById('cardGrid').style.display === 'none') {
+            alert("🎴 Card submitted successfully! Thank you.");
+            document.getElementById('dashboardSection').style.display = 'none';
+            document.getElementById('roleSelectionSection').style.display = 'block';
+        } else {
+            dbFetchCards();
+        }
 		}
-		
-		async function dbDeleteSubmission(submissionId) {
+
+async function dbDeleteSubmission(submissionId) {
     if (!confirm("Are you absolutely sure you want to permanently delete this submission?")) {
         return;
-    
+		}
 
     const { error } = await supabase
         .from('Submissions')
         .delete()
-        .eq('id', submissionId); 
+        .eq('id', submissionId);
 
     if (error) {
         alert("Database Error: Could not delete -> " + error.message);
         return;
-    }
+		}
 
     alert("Submission permanently removed.");
     await dbFetchCards(); 
 	}
-            const cardData = {
-                uid: document.getElementById('playerUid').value.trim(),
-                name: document.getElementById('cardName').value.trim(),
-                num: document.getElementById('imageNum').value.trim(),
-                frame: document.getElementById('frameName').value.trim(),
-                img: document.getElementById('imgLink').value.trim()
-            };
 
-            if (!cardData.uid || !cardData.name || !cardData.num || !cardData.frame || !cardData.img) {
-                alert("All data fields are mandatory!"); return;
-            }
-
-            const { error } = await supabase.from('Submissions').insert([cardData]);
-            if (error) {
-                alert("Database Sync Failed: " + error.message);<!-- 
-  
-        } else {
-            document.getElementById('cardName').value = '';
-            document.getElementById('imageNum').value = '';
-            document.getElementById('frameName').value = '';
-            document.getElementById('imgLink').value = '';
-            
-            if (document.getElementById('cardGrid').style.display === 'none') {
-                alert("🎉 Card submitted successfully! Thank you.");
-                document.getElementById('dashboardSection').style.display = 'none';
-                document.getElementById('roleSelectionSection').style.display = 'block';
-            } else {
-                dbFetchCards();
-            }
         }
     }
 
