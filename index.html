@@ -61,32 +61,43 @@
         <button style="background: #007BFF;" onclick="checkLogin()">Access Dashboard</button>
     </div>
 
-    <div id="dashboardSection" style="display: none;">
-        <button id="playerBackBtn" class="back-btn" style="display: none;" onclick="goBackToRoles('dashboardSection')">← Go Back</button>
-        <h2>🏆 Competition Management Dashboard (Shared View)</h2>
-        
-        <div class="form-container">
-            <div class="form-grid">
-                <div class="form-group"><label for="playerUid">Player UID</label><input type="text" id="playerUid" placeholder="e.g., 940356491989360650"></div>
-                <div class="form-group"><label for="cardName">Card Name</label><input type="text" id="cardName" placeholder="e.g., Mahiru Shiina"></div>
-                <div class="form-group"><label for="imageNum">Image Number</label><input type="text" id="imageNum" placeholder="e.g., 10"></div>
-                <div class="form-group"><label for="frameName">Frame Name</label><input type="text" id="frameName" placeholder="e.g., Starshell Midnight"></div>
-            </div>
-            <div class="form-group" style="margin-bottom: 15px;">
-                <label for="imgLink">Image URL (Direct Link)</label>
-                <input type="url" id="imgLink" placeholder="https://example.com">
-            </div>
-            <button onclick="dbAddCard()">Add Card Submission</button>
-        </div>
-
-        <div class="tabs">
-            <button class="tab-btn active" id="tabAll" onclick="switchTab('all')">All Submissions</button>
-            <button class="tab-btn danger-tab" id="tabStrict" onclick="switchTab('strict')">Confirmed Dupes</button>
-            <button class="tab-btn warning-tab" id="tabPotential" onclick="switchTab('potential')">Potential Dupes</button>
-        </div>
-
-        <ul id="cardGrid" class="card-grid"></ul>
+   <div id="submissionFormSection" style="display: none;">
+    <button onclick="goBackToRoles('submissionFormSection')">← Go Back</button>
+    <h2>📥 Player Submission Form</h2>
+    <div class="form-group">
+        <label>Player UID</label>
+        <input type="text" id="playerUid">
     </div>
+    <div class="form-group">
+        <label>Card Name</label>
+        <input type="text" id="cardName">
+    </div>
+    <div class="form-group">
+        <label>Image Number</label>
+        <input type="text" id="imageNum">
+    </div>
+    <div class="form-group">
+        <label>Frame Name</label>
+        <input type="text" id="frameName">
+    </div>
+    <div class="form-group">
+        <label>Image URL (Direct Link)</label>
+        <input type="text" id="imgLink">
+    </div>
+    <button class="btn" onclick="dbAddCard()">Add Card Submission</button>
+</div>
+
+<div id="dashboardSection" style="display: none;">
+    <button onclick="goBackToRoles('dashboardSection')">← Go Back</button>
+    <h2>🏆 Competition Management Dashboard (Shared View)</h2>
+    <div style="margin-bottom: 20px;">
+        <button id="tabAll" class="btn btn-tabs active" onclick="switchTab('all')">All Submissions</button>
+        <button id="tabStrict" class="btn btn-tabs" onclick="switchTab('strict')">Confirmed Dupes</button>
+        <button id="tabPotential" class="btn btn-tabs" onclick="switchTab('potential')">Potential Dupes</button>
+    </div>
+    <ul id="cardGrid" class="card-grid"></ul>
+</div>
+
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 	<script>
@@ -102,35 +113,46 @@
             await dbFetchCards();
         };
 
-        function playerPage() {
-            // Checks if your page uses a form section wrapper name
-            const section = document.getElementById('submissionFormSection') || document.getElementById('formSection');
-            if (section) {
-                switchPanel(section.id);
-            } else {
-                // Fallback: If you don't use panel wrappers, toggle visibility directly
-                const form = document.getElementById('cardGrid') ? document.getElementById('cardGrid').parentElement : null;
-                if(form) form.style.display = 'block';
-            }
-        }
+function playerPage() {
+    document.getElementById('roleSelectionSection').style.display = 'none';
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('submissionFormSection').style.display = 'block';
+    document.getElementById('dashboardSection').style.display = 'none';
+}
 
-        function managerLoginPage() {
-            const password = prompt("Enter Manager Password:");
-            if (password === "admin") {
-                const dashboard = document.getElementById('dashboardSection') || document.getElementById('managerSection') || document.getElementById('cardGrid')?.parentElement;
-                if (dashboard) {
-                    document.getElementById('roleSelectionSection') ? document.getElementById('roleSelectionSection').style.display = 'none' : null;
-                    dashboard.style.display = 'block';
-                    renderCards();
-                }
-            } else {
-                alert("Incorrect password!");
-            }
-        }
+function managerLoginPage() {
+    document.getElementById('roleSelectionSection').style.display = 'none';
+    document.getElementById('loginSection').style.display = 'block';
+    document.getElementById('submissionFormSection').style.display = 'none';
+    document.getElementById('dashboardSection').style.display = 'none';
+}
 
-        function goBack() {
-            location.reload(); // Quick clean slate way to reset view options securely
-        }
+function checkLogin() {
+    const passwordField = document.getElementById('managerPassword') || document.getElementById('managerPasswordInput');
+    if (!passwordField) {
+        alert("System Error: Password input field not found in HTML!");
+        return;
+    }
+    
+    const password = passwordField.value.trim();
+    
+    if (password === "admin") { 
+        passwordField.value = '';
+        document.getElementById('roleSelectionSection').style.display = 'none';
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('submissionFormSection').style.display = 'none';
+        document.getElementById('dashboardSection').style.display = 'block';
+        renderCards();
+    } else {
+        alert("Incorrect password! Access denied.");
+    }
+}
+
+function goBackToRoles(currentSectionId) {
+    document.getElementById('roleSelectionSection').style.display = 'block';
+    const activeSection = document.getElementById(currentSectionId);
+    if (activeSection) activeSection.style.display = 'none';
+}
 
         function switchPanel(panelId) {
     const target = document.getElementById(panelId);
