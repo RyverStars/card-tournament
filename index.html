@@ -91,9 +91,9 @@
     <button onclick="goBackToRoles('dashboardSection')">← Go Back</button>
     <h2>🏆 Competition Management Dashboard (Shared View)</h2>
     <div style="margin-bottom: 20px;">
-        <button id="tabAll" class="btn btn-tabs active" onclick="switchTab('all')">All Submissions</button>
-        <button id="tabStrict" class="btn btn-tabs" onclick="switchTab('strict')">Confirmed Dupes</button>
-        <button id="tabPotential" class="btn btn-tabs" onclick="switchTab('potential')">Potential Dupes</button>
+        <button id="tabAll" class="tab-btn.active" onclick="switchTab('all')">All Submissions</button>
+        <button id="tabStrict" class="tab-btn" onclick="switchTab('strict')">Confirmed Dupes</button>
+        <button id="tabPotential" class="tab-btn" onclick="switchTab('potential')">Potential Dupes</button>
     </div>
     <ul id="cardGrid" class="card-grid"></ul>
 </div>
@@ -109,9 +109,9 @@
          let allSubmissions = [];
         let currentTab = 'all';
 
-        window.onload = async function() {
-            await dbFetchCards();
-        };
+        window.onload = function() {
+            console.log("App initialized."); 
+		};
 
 function playerPage() {
     document.getElementById('roleSelectionSection').style.display = 'none';
@@ -129,24 +129,21 @@ function managerLoginPage() {
 
 function checkLogin() {
     const passwordField = document.getElementById('managerPassword') || document.getElementById('managerPasswordInput');
-    if (!passwordField) {
-        alert("System Error: Password input field not found in HTML!");
-        return;
-    }
-    
-    const password = passwordField.value.trim();
+    const password = passwordField ? passwordField.value.trim() : '';
     
     if (password === "admin") { 
-        passwordField.value = '';
+        if (passwordField) passwordField.value = '';
         document.getElementById('roleSelectionSection').style.display = 'none';
         document.getElementById('loginSection').style.display = 'none';
         document.getElementById('submissionFormSection').style.display = 'none';
         document.getElementById('dashboardSection').style.display = 'block';
-        renderCards();
+        
+        dbFetchCards(); 
     } else {
         alert("Incorrect password! Access denied.");
     }
 }
+
 
 function goBackToRoles(currentSectionId) {
     document.getElementById('roleSelectionSection').style.display = 'block';
@@ -278,29 +275,21 @@ function goBackToRoles(currentSectionId) {
         if (clearMatch) li.classList.add('is-strict-dupe');
         else if (partialMatch) li.classList.add('is-potential-dupe');
 
-        li.innerHTML = `
-            <button 
-                class="safe-delete-btn" 
-                oncontextmenu="event.preventDefault(); dbDeleteSubmission('${card.id}')"
-                onclick="alert('⚠️ Safe Lock Active: To protect against accidents, you must RIGHT-CLICK (or long-press on mobile) this trash icon to delete.');"
-                title="Right-click to delete"
-                style="position: absolute; top: 8px; right: 8px; background: #fee2e2; border: 1px solid #fca5a5; border-radius: 4px; cursor: pointer; font-size: 13px; padding: 3px 5px; opacity: 0.6; transition: all 0.2s; z-index: 10;"
-                onmouseover="this.style.opacity='1'; this.style.background='#fecaca';"
-                onmouseout="this.style.opacity='0.6'; this.style.background='#fee2e2';">
-                🗑️
-            </button>
+                        li.innerHTML = '<button class="safe-delete-btn" oncontextmenu="event.preventDefault(); dbDeleteSubmission(\'' + card.id + '\')" ' +
+            'onclick="alert(\'⚠️ Safe Lock Active: To protect against accidents, you must RIGHT-CLICK this trash icon to delete.\');" ' +
+            'title="Right-click to delete" style="position: absolute; top: 8px; right: 8px; background: #fee2e2; border: 1px solid #fca5a5; border-radius: 4px; cursor: pointer; font-size: 13px; padding: 3px 5px; opacity: 0.6; transition: all 0.2s; z-index: 10;" ' +
+            'onmouseover="this.style.opacity=\'1\'; this.style.background=\'#fecaca\';" onmouseout="this.style.opacity=\'0.6\'; this.style.background=\'#fee2e2\';">🗑️</button>' +
+            (clearMatch ? '<div class="badge dupe-badge">Confirmed Dupe</div>' : '') +
+            ((!clearMatch && partialMatch) ? '<div class="badge potential-badge">Potential Dupe</div>' : '') +
+            '<div class="img-container"><img class="card-img" src="' + card.img + '" loading="lazy"></div>' +
+            '<div>' +
+                '<div class="card-name">' + card.name + '</div>' +
+                '<div class="card-meta"><b>Player UID:</b> ' + card.uid + '</div>' +
+                '<div class="card-meta"><b>Image No:</b> ' + card.num + '</div>' +
+                '<div class="card-meta"><b>Frame:</b> ' + card.frame + '</div>' +
+            '</div>' +
+            '<a href="' + card.img + '" target="_blank" style="display:block; margin-top:8px; font-size:12px; color:#2563eb;">Download Link</a>';
 
-            ${clearMatch ? '<div class="badge dupe-badge">Confirmed Dupe</div>' : ''}
-            ${(!clearMatch && partialMatch) ? '<div class="badge potential-badge">Potential Dupe</div>' : ''}
-            <div class="img-container"><img class="card-img" src="${card.img}"></div>
-            <div>
-                <div class="card-name">${card.name}</div>
-                <div class="card-meta"><b>Player UID:</b> ${card.uid}</div>
-                <div class="card-meta"><b>Image No:</b> ${card.num}</div>
-                <div class="card-meta"><b>Frame:</b> ${card.frame}</div>
-            </div>
-            <a href="${card.img}" target="_blank" style="display:block; margin-top:8px; font-size:12px; color:#2563eb;">Download Link</a>
-        `;
         grid.appendChild(li);
     });
 }
